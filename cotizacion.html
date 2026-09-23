@@ -532,7 +532,8 @@ body{background:var(--card-bg);color:var(--text);font-family:var(--fb);font-size
 </main>
 
 <script>
-var SCRIPT_URL=''; // TODO: pegar URL del Apps Script aqui
+var WH_WRITE= + WRITE_URL + r;
+var WH_READ='https://api.allorigins.win/raw?url=' + encodeURIComponent( + READ_API + r);
 var ADMIN_PASS='brandev2026';
 var OPTS=[
   {key:'A',label:'Cotización A — Uniarch Panda P · microSD',color:'#1E3A5F'},
@@ -552,10 +553,7 @@ function renderResults(){
   if(resp.length===0){noV.style.display='block';return;}
   noV.style.display='none';
   var counts={A:0,B:0,C:0,D:0,E:0};
-  resp.forEach(function(r){
-    var k=r.cotizacion.charAt(0);
-    if(counts[k]!==undefined)counts[k]++;
-  });
+  resp.forEach(function(r){var k=r.cotizacion.charAt(0);if(counts[k]!==undefined)counts[k]++;});
   var total=resp.length;
   OPTS.forEach(function(o){
     var c=counts[o.key];
@@ -591,10 +589,7 @@ function doSubmit(e){
   var stored=getResponses();
   stored.push({cotizacion:cot,fecha:new Date().toISOString()});
   localStorage.setItem('bd_resp',JSON.stringify(stored));
-  // Enviar al backend
-  if(SCRIPT_URL){
-    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({nombre:nombre,cotizacion:cot})}).catch(function(){});
-  }
+  fetch(WH_WRITE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:nombre,cotizacion:cot,fecha:new Date().toLocaleString('es-GT')})}).catch(function(){});
   document.getElementById('form-wrap').style.display='none';
   var s=document.getElementById('success');
   s.classList.add('vis');
@@ -617,19 +612,21 @@ function adminLogin(){
 
 function loadAdminData(){
   var wrap=document.getElementById('admin-table-wrap');
-  var setupMsg=document.getElementById('admin-setup-msg');
-  if(!SCRIPT_URL){
-    setupMsg.style.display='block';
-    wrap.innerHTML='';
-    document.getElementById('admin-count').textContent='';
-    return;
-  }
-  setupMsg.style.display='none';
-  wrap.innerHTML='<p style="color:#6b7280;font-size:13px;font-family:var(--fm)">Cargando...</p>';
-  fetch(SCRIPT_URL)
+  wrap.innerHTML='<p style="color:#6b7280;font-size:13px;font-family:var(--fm)">Cargando votos...</p>';
+  fetch(WH_READ)
     .then(function(r){return r.json();})
-    .then(function(votes){renderAdminTable(votes);})
-    .catch(function(){wrap.innerHTML='<p style="color:#dc2626;font-size:13px">Error al cargar datos. Verifica que el Apps Script esté publicado como "Cualquier usuario".</p>';});
+    .then(function(data){
+      var rows=data.data||[];
+      var votes=[];
+      rows.forEach(function(req){
+        try{
+          var d=JSON.parse(req.content||'{}');
+          if(d.nombre&&d.cotizacion)votes.push({nombre:d.nombre,cotizacion:d.cotizacion,fecha:d.fecha||req.created_at||''});
+        }catch(e){}
+      });
+      renderAdminTable(votes);
+    })
+    .catch(function(){wrap.innerHTML='<p style="color:#dc2626;font-size:13px">Error de red. Reintenta en un momento.</p>';});
 }
 
 function renderAdminTable(votes){
@@ -641,14 +638,14 @@ function renderAdminTable(votes){
     return;
   }
   cnt.textContent=votes.length+' respuesta'+(votes.length!==1?'s':'')+' recibidas';
+  var colors={A:'#1E3A5F',B:'#1448CC',C:'#059669',D:'#7C3AED',E:'#0369A1'};
   var html='<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:400px">'
     +'<thead><tr style="background:#0B1A2E;color:white">'
-    +'<th style="padding:10px 14px;text-align:left;font-weight:600;white-space:nowrap">#</th>'
-    +'<th style="padding:10px 14px;text-align:left;font-weight:600">Nombre</th>'
-    +'<th style="padding:10px 14px;text-align:left;font-weight:600">Cotización</th>'
-    +'<th style="padding:10px 14px;text-align:left;font-weight:600;white-space:nowrap">Fecha</th>'
+    +'<th style="padding:10px 14px;text-align:left">#</th>'
+    +'<th style="padding:10px 14px;text-align:left">Nombre</th>'
+    +'<th style="padding:10px 14px;text-align:left">Cotización</th>'
+    +'<th style="padding:10px 14px;text-align:left">Fecha</th>'
     +'</tr></thead><tbody>';
-  var colors={A:'#1E3A5F',B:'#1448CC',C:'#059669',D:'#7C3AED',E:'#0369A1'};
   votes.forEach(function(v,i){
     var bg=i%2===0?'#fff':'#f8fafc';
     var key=v.cotizacion.charAt(0);
@@ -656,7 +653,8 @@ function renderAdminTable(votes){
     html+='<tr style="background:'+bg+';border-bottom:1px solid #e2e8f0">'
       +'<td style="padding:10px 14px;color:#9ca3af;font-family:var(--fm)">'+(i+1)+'</td>'
       +'<td style="padding:10px 14px;font-weight:600;color:#111827">'+escHtml(v.nombre)+'</td>'
-      +'<td style="padding:10px 14px"><span style="background:'+col+';color:white;font-family:var(--fm);font-weight:bold;font-size:11px;padding:3px 9px;border-radius:3px">'+escHtml(key)+'</span><span style="margin-left:8px;color:#374151;font-size:12px">'+escHtml(v.cotizacion.replace(/^./,'').replace(/^[ —-]+/,''))+'</span></td>'
+      +'<td style="padding:10px 14px"><span style="background:'+col+';color:white;font-family:var(--fm);font-weight:bold;font-size:11px;padding:3px 9px;border-radius:3px">'+escHtml(key)+'</span>'
+      +'<span style="margin-left:8px;color:#374151;font-size:12px">'+escHtml(v.cotizacion.replace(/^[A-E]\s*[—-]\s*/,'').trim())+'</span></td>'
       +'<td style="padding:10px 14px;color:#6b7280;font-family:var(--fm);font-size:12px;white-space:nowrap">'+escHtml(String(v.fecha))+'</td>'
       +'</tr>';
   });
@@ -664,7 +662,6 @@ function renderAdminTable(votes){
   wrap.innerHTML=html;
 }
 
-// Mostrar panel admin si URL tiene ?admin
 if(window.location.search.includes('admin')){
   window.addEventListener('DOMContentLoaded',function(){
     document.getElementById('admin-panel').style.display='block';
