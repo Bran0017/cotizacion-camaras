@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <title>Cotización Cámaras de Seguridad — BranDev</title>
 <style>
 :root {
@@ -408,10 +410,11 @@ body{background:var(--card-bg);color:var(--text);font-family:var(--fb);font-size
   <div class="notes">
     <p class="ntitle">Notas generales</p>
     <ul class="nlist">
-      <li>Las 6 "entradas" son conectores de cable UTP (no canales de un DVR): $800 cada uno, total $4.800.</li>
-      <li>El cable exterior se calculó a $1.200 por metro, para un total de 55 metros.</li>
-      <li>El precio de la caja estanca ($2.500) quedó un poco ambiguo en la cotización dictada.</li>
-      <li>Este documento es un resumen de trabajo para revisión interna, no una factura ni una cotización oficial emitida por BranDev.</li>
+      <li>Las 6 "entradas" son conectores de cable UTP (no canales de un DVR): $800 c/u, total $4.800.</li>
+      <li>El cable exterior se calculó a $1.200/metro, para un total de 55 metros.</li>
+      <li>El precio de la caja estanca ($2.500) está pendiente de confirmar con BranDev antes de aprobar la Cot. B.</li>
+      <li>Los chazos, anclajes y base de montaje NO están incluidos en ninguna cotización — se definen una vez se elija el punto definitivo de instalación.</li>
+      <li>Este documento es para revisión interna, no es factura ni cotización oficial emitida por BranDev.</li>
     </ul>
   </div>
 
@@ -423,7 +426,7 @@ body{background:var(--card-bg);color:var(--text);font-family:var(--fb);font-size
       <div class="surv-hdr">
         <p class="s-eye">Su opinión importa</p>
         <h2 class="s-title">¿Con cuál cotización está de acuerdo?</h2>
-        <p class="s-sub">Indique su nombre y seleccione la opción que prefiere.</p>
+        <p class="s-sub">Indique su nombre y seleccione la opción que prefiere. BranDev revisará las respuestas antes de proceder.</p>
       </div>
       <div id="form-wrap">
         <form class="surv-form" id="surv-form" onsubmit="doSubmit(event)">
@@ -494,6 +497,7 @@ body{background:var(--card-bg);color:var(--text);font-family:var(--fb);font-size
         <p class="eyebrow">Resultados en tiempo real</p>
         <h2 class="sec-title" style="margin-bottom:0">Votos por cotización</h2>
       </div>
+      <button onclick="downloadJSON()" style="font-family:var(--fm);font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);border:none;border-radius:4px;padding:6px 14px;color:white;cursor:pointer;margin-right:6px">Descargar JSON</button><button onclick="clearVotes()" style="font-family:var(--fm);font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--border);border-radius:4px;padding:6px 12px;color:var(--text-muted);cursor:pointer">Limpiar votos</button>
     </div>
     <div id="results-wrap" style="display:flex;flex-direction:column;gap:10px"></div>
     <p id="no-votes" style="font-size:13px;color:var(--text-muted);display:none">Aún no hay votos registrados. Sea el primero en responder la encuesta.</p>
